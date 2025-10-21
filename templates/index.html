@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Strategy Backtester</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📈 Trading Strategy Backtester</h1>
+            <p>Analyze historical stock data and backtest your trading strategies</p>
+        </header>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="symbolInput" 
+                    placeholder="Enter stock symbol (e.g., AAPL)" 
+                    autocomplete="off"
+                />
+                <button id="fetchBtn" onclick="fetchStockData()">
+                    Fetch Data
+                </button>
+            </div>
+            <div id="errorMessage" class="error-message"></div>
+            <div id="loadingSpinner" class="loading-spinner">
+                Loading data...
+            </div>
+        </div>
+
+        <div id="resultSection" class="result-section">
+            <div class="result-header">
+                <h2 id="stockSymbol"></h2>
+                <div id="dataCount"></div>
+            </div>
+            
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Open</th>
+                            <th>High</th>
+                            <th>Low</th>
+                            <th>Close</th>
+                            <th>Volume</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
