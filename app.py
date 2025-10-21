@@ -1,23 +1,3 @@
-from flask import Flask, render_template, jsonify, request
-import requests
-from datetime import datetime, timedelta
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-app = Flask(__name__)
-
-# Get API key from environment variable
-FINNHUB_API_KEY = os.getenv('FINNHUB_API_KEY')
-
-# Configure for production
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
 @app.route('/api/stock-data', methods=['POST'])
 def get_stock_data():
     try:
@@ -26,6 +6,11 @@ def get_stock_data():
         
         if not symbol:
             return jsonify({'error': 'Symbol is required'}), 400
+        
+        # Check if API key exists
+        if not FINNHUB_API_KEY:
+            app.logger.error('FINNHUB_API_KEY not set in environment')
+            return jsonify({'error': 'API key not configured'}), 500
         
         # Calculate date range (last 365 days)
         end_date = datetime.now()
@@ -45,10 +30,20 @@ def get_stock_data():
             'token': FINNHUB_API_KEY
         }
         
+        app.logger.info(f'Requesting data for {symbol}')
         response = requests.get(url, params=params, timeout=10)
+        
+        # Log the response for debugging
+        app.logger.info(f'Response status: {response.status_code}')
+        app.logger.info(f'Response body: {response.text}')
         
         if response.status_code == 200:
             result = response.json()
+            
+            # Check for API errors
+            if 'error' in result:
+                app.logger.error(f'API Error: {result["error"]}')
+                return jsonify({'error': f'API Error: {result["error"]}'}), 400
             
             if result.get('s') == 'no_data':
                 return jsonify({'error': 'No data found for this symbol'}), 404
@@ -70,19 +65,11 @@ def get_stock_data():
                 'data': formatted_data
             })
         else:
-            return jsonify({'error': 'Failed to fetch data from Finnhub'}), 500
+            app.logger.error(f'HTTP Error {response.status_code}: {response.text}')
+            return jsonify({'error': f'HTTP {response.status_code}: {response.text}'}), 500
             
     except requests.Timeout:
         return jsonify({'error': 'Request timeout - please try again'}), 504
     except Exception as e:
         app.logger.error(f'Error: {str(e)}')
-        return jsonify({'error': 'An error occurred'}), 500
-
-@app.route('/health')
-def health():
-    """Health check endpoint for monitoring"""
-    return jsonify({'status': 'healthy'}), 200
-
-if __name__ == '__main__':
-    # Only for local development
-    app.run(debug=True, port=5000)
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
