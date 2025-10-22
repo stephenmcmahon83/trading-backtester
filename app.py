@@ -1,20 +1,19 @@
 from flask import Flask, render_template, jsonify, request
-from datetime import datetime, timedelta
+import psycopg2
+from psycopg2.extras import RealDictCursor
 import os
 from dotenv import load_dotenv
-
-# Try to import yfinance
-try:
-    import yfinance as yf
-    YFINANCE_AVAILABLE = True
-except ImportError as e:
-    YFINANCE_AVAILABLE = False
-    print(f"WARNING: yfinance not available: {e}")
 
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
+
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+def get_db_connection():
+    """Create database connection"""
+    return psycopg2.connect(DATABASE_URL)
 
 @app.route('/')
 def index():
@@ -23,53 +22,52 @@ def index():
 @app.route('/api/stock-data', methods=['POST'])
 def get_stock_data():
     try:
-        if not YFINANCE_AVAILABLE:
-            return jsonify({'error': 'Stock data service temporarily unavailable.'}), 503
-        
         data = request.get_json()
         symbol = data.get('symbol', '').upper()
         
         if not symbol:
             return jsonify({'error': 'Symbol is required'}), 400
         
-        app.logger.info(f'Requesting data for {symbol}')
+        # Get years parameter (default 1 year)
+        years = int(data.get('years', 1))
+        if years > 20:
+            years = 20  # Cap at 20 years
         
-        # Calculate date range (last 365 days)
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=365)
+        app.logger.info(f'Fetching {years} years of data for {symbol} from database')
         
-        # Create ticker with custom session to add headers
-        import requests
-        session = requests.Session()
-        session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        })
+        # Connect to database
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         
-        # Fetch data from Yahoo Finance with custom session
-        ticker = yf.Ticker(symbol, session=session)
-        hist = ticker.history(start=start_date, end=end_date)
+        # Query data
+        cursor.execute("""
+            SELECT date, open, high, low, close, volume
+            FROM stock_data
+            WHERE symbol = %s
+            ORDER BY date DESC
+            LIMIT %s
+        """, (symbol, years * 365))
         
-        # Check if data exists
-        if hist.empty:
-            app.logger.warning(f'No data found for {symbol}')
-            return jsonify({'error': f'No data found for {symbol}. Try: AAPL, MSFT, GOOGL, TSLA'}), 404
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
         
-        # Format the data
+        if not rows:
+            return jsonify({'error': f'No data found for {symbol}. Available symbols: AAPL, MSFT, GOOGL, TSLA, AMZN, META, NVDA, SPY, QQQ, DIA'}), 404
+        
+        # Format data
         formatted_data = []
-        for date, row in hist.iterrows():
+        for row in rows:
             formatted_data.append({
-                'date': date.strftime('%Y-%m-%d'),
-                'open': round(float(row['Open']), 2),
-                'high': round(float(row['High']), 2),
-                'low': round(float(row['Low']), 2),
-                'close': round(float(row['Close']), 2),
-                'volume': int(row['Volume'])
+                'date': row['date'].strftime('%Y-%m-%d'),
+                'open': float(row['open']),
+                'high': float(row['high']),
+                'low': float(row['low']),
+                'close': float(row['close']),
+                'volume': int(row['volume'])
             })
         
-        # Sort by date descending (newest first)
-        formatted_data.reverse()
-        
-        app.logger.info(f'Successfully fetched {len(formatted_data)} days of data for {symbol}')
+        app.logger.info(f'Successfully fetched {len(formatted_data)} days of data')
         
         return jsonify({
             'symbol': symbol,
@@ -77,15 +75,33 @@ def get_stock_data():
         })
             
     except Exception as e:
-        app.logger.error(f'Error fetching data for {symbol}: {str(e)}')
-        return jsonify({'error': f'Failed to fetch data. Please try again.'}), 500
+        app.logger.error(f'Error: {str(e)}')
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
+
+@app.route('/api/available-symbols', methods=['GET'])
+def get_available_symbols():
+    """Return list of available symbols"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        cursor.execute("""
+            SELECT symbol, name, last_updated, total_days
+            FROM symbols
+            ORDER BY symbol
+        """)
+        
+        symbols = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'symbols': symbols})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/health')
 def health():
-    return jsonify({
-        'status': 'healthy',
-        'yfinance_available': YFINANCE_AVAILABLE
-    }), 200
+    return jsonify({'status': 'healthy'}), 200
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
