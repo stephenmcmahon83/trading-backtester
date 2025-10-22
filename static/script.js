@@ -1,3 +1,8 @@
+// Global variable to store current data
+let currentData = [];
+let sortColumn = 'date';
+let sortDirection = 'desc'; // Start with newest first
+
 // Function to fetch stock data
 async function fetchStockData() {
     const symbolInput = document.getElementById('symbolInput');
@@ -37,8 +42,11 @@ async function fetchStockData() {
             throw new Error(data.error || 'Failed to fetch data');
         }
         
-        // Display the data
-        displayStockData(data);
+        // Store data globally and display
+        currentData = data.data;
+        sortColumn = 'date';
+        sortDirection = 'desc';
+        displayStockData(data.symbol, currentData);
         
     } catch (error) {
         showError(error.message);
@@ -48,36 +56,115 @@ async function fetchStockData() {
     }
 }
 
-// Function to display stock data in table
-function displayStockData(data) {
+// Function to sort data
+function sortData(column) {
+    // Toggle direction if clicking same column
+    if (sortColumn === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortColumn = column;
+        sortDirection = 'desc'; // Default to descending for new column
+    }
+    
+    // Sort the data
+    currentData.sort((a, b) => {
+        let aVal = a[column];
+        let bVal = b[column];
+        
+        // Handle different data types
+        if (column === 'date') {
+            aVal = new Date(aVal);
+            bVal = new Date(bVal);
+        } else {
+            aVal = parseFloat(aVal);
+            bVal = parseFloat(bVal);
+        }
+        
+        if (sortDirection === 'asc') {
+            return aVal > bVal ? 1 : -1;
+        } else {
+            return aVal < bVal ? 1 : -1;
+        }
+    });
+    
+    // Re-render table
+    renderTable(currentData);
+    updateSortIndicators();
+}
+
+// Function to display stock data
+function displayStockData(symbol, data) {
     const stockSymbol = document.getElementById('stockSymbol');
     const dataCount = document.getElementById('dataCount');
-    const tableBody = document.getElementById('tableBody');
     const resultSection = document.getElementById('resultSection');
     
     // Update header
-    stockSymbol.textContent = data.symbol;
-    dataCount.textContent = `${data.data.length} trading days`;
+    stockSymbol.textContent = symbol;
     
-    // Clear existing table data
+    // Calculate date range
+    const dates = data.map(d => new Date(d.date));
+    const oldestDate = new Date(Math.min(...dates));
+    const newestDate = new Date(Math.max(...dates));
+    const years = ((newestDate - oldestDate) / (365.25 * 24 * 60 * 60 * 1000)).toFixed(1);
+    
+    dataCount.textContent = `${data.length} trading days (${years} years)`;
+    
+    // Render table
+    renderTable(data);
+    updateSortIndicators();
+    
+    // Show results
+    resultSection.classList.add('show');
+}
+
+// Function to render table body
+function renderTable(data) {
+    const tableBody = document.getElementById('tableBody');
     tableBody.innerHTML = '';
     
-    // Populate table (reverse to show newest first)
-    data.data.reverse().forEach(day => {
+    data.forEach(day => {
         const row = document.createElement('tr');
+        
+        // Calculate daily change
+        const change = day.close - day.open;
+        const changePercent = ((change / day.open) * 100).toFixed(2);
+        const changeClass = change >= 0 ? 'positive' : 'negative';
+        
         row.innerHTML = `
             <td>${day.date}</td>
             <td>$${day.open.toFixed(2)}</td>
             <td>$${day.high.toFixed(2)}</td>
             <td>$${day.low.toFixed(2)}</td>
             <td>$${day.close.toFixed(2)}</td>
+            <td class="${changeClass}">${change >= 0 ? '+' : ''}$${change.toFixed(2)} (${changePercent}%)</td>
             <td>${formatVolume(day.volume)}</td>
         `;
         tableBody.appendChild(row);
     });
+}
+
+// Function to update sort indicators
+function updateSortIndicators() {
+    // Remove all existing indicators
+    document.querySelectorAll('th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+    });
     
-    // Show results
-    resultSection.classList.add('show');
+    // Add indicator to current sort column
+    const columnMap = {
+        'date': 0,
+        'open': 1,
+        'high': 2,
+        'low': 3,
+        'close': 4,
+        'volume': 5
+    };
+    
+    const thIndex = columnMap[sortColumn];
+    if (thIndex !== undefined) {
+        const th = document.querySelectorAll('th')[thIndex];
+        th.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
 }
 
 // Function to show error message
@@ -89,7 +176,9 @@ function showError(message) {
 
 // Function to format volume numbers
 function formatVolume(volume) {
-    if (volume >= 1000000) {
+    if (volume >= 1000000000) {
+        return (volume / 1000000000).toFixed(2) + 'B';
+    } else if (volume >= 1000000) {
         return (volume / 1000000).toFixed(2) + 'M';
     } else if (volume >= 1000) {
         return (volume / 1000).toFixed(2) + 'K';
