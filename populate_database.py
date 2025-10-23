@@ -17,7 +17,7 @@ SYMBOLS = [
     'JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'V', 'MA', 'PYPL', 'AXP',
     
     # Leveraged/ETF
-    'TQQQ', 'SPXL', 'SOXL', 'SOXX', 'IBB', 'LABU', 'XLE', 'GUSH', 'GLD', 'GDX','NUGT','JNUG', 'FXI','XPP','KWEB','CWEB','EWG','EWU','EWZ','TLT','FANG'
+    'TQQQ', 'SPXL', 'SOXL', 'SOXX', 'IBB', 'LABU', 'XLE', 'GUSH', 'GLD', 'GDX','NUGT','JNUG', 'FXI','XPP','KWEB','CWEB','EWG','EWU','EWZ','TLT','FANG',
     
     # Consumer
     'WMT', 'HD', 'DIS', 'NKE', 'MCD', 'SBUX', 'KO', 'PEP', 'COST', 'TGT',

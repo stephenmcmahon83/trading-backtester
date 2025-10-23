@@ -18,7 +18,7 @@
                 <input 
                     type="text" 
                     id="symbolInput" 
-                    placeholder="Enter stock symbol (e.g., AAPL)" 
+                    placeholder="Enter stock symbol (e.g., AAPL, SPY, MSFT)" 
                     autocomplete="off"
                 />
                 <button id="fetchBtn" onclick="fetchStockData()">
@@ -41,12 +41,13 @@
                 <table id="dataTable">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Open</th>
-                            <th>High</th>
-                            <th>Low</th>
-                            <th>Close</th>
-                            <th>Volume</th>
+                            <th onclick="sortData('date')" class="sortable">Date</th>
+                            <th onclick="sortData('open')" class="sortable">Open</th>
+                            <th onclick="sortData('high')" class="sortable">High</th>
+                            <th onclick="sortData('low')" class="sortable">Low</th>
+                            <th onclick="sortData('close')" class="sortable">Close</th>
+                            <th>Daily Change</th>
+                            <th onclick="sortData('volume')" class="sortable">Volume</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
