@@ -3,6 +3,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
 
 load_dotenv()
 
@@ -28,32 +29,45 @@ def get_stock_data():
         if not symbol:
             return jsonify({'error': 'Symbol is required'}), 400
         
-        # Get years parameter (default 1 year)
-        years = int(data.get('years', 1))
-        if years > 20:
-            years = 20  # Cap at 20 years
+        # Get years parameter (default all data)
+        years = data.get('years', None)
         
-        app.logger.info(f'Fetching {years} years of data for {symbol} from database')
+        app.logger.info(f'Fetching data for {symbol} from database')
         
         # Connect to database
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
-        # Query data
-        cursor.execute("""
-            SELECT date, open, high, low, close, volume
-            FROM stock_data
-            WHERE symbol = %s
-            ORDER BY date DESC
-            LIMIT %s
-        """, (symbol, years * 365))
+        # Query data - get all available data by default
+        if years:
+            years = int(years)
+            if years > 20:
+                years = 20  # Cap at 20 years
+            
+            cursor.execute("""
+                SELECT date, open, high, low, close, volume
+                FROM stock_data
+                WHERE symbol = %s
+                ORDER BY date DESC
+                LIMIT %s
+            """, (symbol, years * 365))
+        else:
+            # Get all available data
+            cursor.execute("""
+                SELECT date, open, high, low, close, volume
+                FROM stock_data
+                WHERE symbol = %s
+                ORDER BY date DESC
+            """, (symbol,))
         
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
         
         if not rows:
-            return jsonify({'error': f'No data found for {symbol}. Available symbols: AAPL, MSFT, GOOGL, TSLA, AMZN, META, NVDA, SPY, QQQ, DIA'}), 404
+            return jsonify({
+                'error': f'No data found for {symbol}. Available symbols: AAPL, MSFT, GOOGL, TSLA, AMZN, META, NVDA, SPY, QQQ, DIA'
+            }), 404
         
         # Format data
         formatted_data = []
@@ -71,7 +85,8 @@ def get_stock_data():
         
         return jsonify({
             'symbol': symbol,
-            'data': formatted_data
+            'data': formatted_data,
+            'count': len(formatted_data)
         })
             
     except Exception as e:
@@ -86,8 +101,12 @@ def get_available_symbols():
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
         cursor.execute("""
-            SELECT symbol, name, last_updated, total_days
-            FROM symbols
+            SELECT DISTINCT symbol,
+                   COUNT(*) as total_days,
+                   MIN(date) as first_date,
+                   MAX(date) as last_date
+            FROM stock_data
+            GROUP BY symbol
             ORDER BY symbol
         """)
         
@@ -95,13 +114,76 @@ def get_available_symbols():
         cursor.close()
         conn.close()
         
-        return jsonify({'symbols': symbols})
+        # Format the response
+        formatted_symbols = []
+        for sym in symbols:
+            formatted_symbols.append({
+                'symbol': sym['symbol'],
+                'total_days': sym['total_days'],
+                'first_date': sym['first_date'].strftime('%Y-%m-%d') if sym['first_date'] else None,
+                'last_date': sym['last_date'].strftime('%Y-%m-%d') if sym['last_date'] else None
+            })
+        
+        return jsonify({'symbols': formatted_symbols})
     except Exception as e:
+        app.logger.error(f'Error fetching symbols: {str(e)}')
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/stock-summary/<symbol>', methods=['GET'])
+def get_stock_summary(symbol):
+    """Get summary statistics for a stock"""
+    try:
+        symbol = symbol.upper()
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        cursor.execute("""
+            SELECT 
+                COUNT(*) as total_days,
+                MIN(date) as first_date,
+                MAX(date) as last_date,
+                AVG(close) as avg_close,
+                MIN(low) as min_price,
+                MAX(high) as max_price,
+                AVG(volume) as avg_volume
+            FROM stock_data
+            WHERE symbol = %s
+        """, (symbol,))
+        
+        summary = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if not summary:
+            return jsonify({'error': f'No data found for {symbol}'}), 404
+        
+        return jsonify({
+            'symbol': symbol,
+            'total_days': summary['total_days'],
+            'first_date': summary['first_date'].strftime('%Y-%m-%d'),
+            'last_date': summary['last_date'].strftime('%Y-%m-%d'),
+            'avg_close': float(summary['avg_close']),
+            'min_price': float(summary['min_price']),
+            'max_price': float(summary['max_price']),
+            'avg_volume': int(summary['avg_volume'])
+        })
+        
+    except Exception as e:
+        app.logger.error(f'Error: {str(e)}')
         return jsonify({'error': str(e)}), 500
 
 @app.route('/health')
 def health():
-    return jsonify({'status': 'healthy'}), 200
+    """Health check endpoint"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT 1')
+        cursor.close()
+        conn.close()
+        return jsonify({'status': 'healthy', 'database': 'connected'}), 200
+    except Exception as e:
+        return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

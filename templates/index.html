@@ -3,51 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Strategy Backtester</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Stock Data Viewer - Professional Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>📈 Trading Strategy Backtester</h1>
-            <p>Analyze historical stock data and backtest your trading strategies</p>
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <h1>📈 Stock Data Viewer</h1>
+                <p class="subtitle">Real-time stock market data analysis</p>
+            </div>
         </header>
 
-        <div class="input-section">
-            <div class="input-group">
-                <input 
-                    type="text" 
-                    id="symbolInput" 
-                    placeholder="Enter stock symbol (e.g., AAPL, SPY, MSFT)" 
-                    autocomplete="off"
-                />
-                <button id="fetchBtn" onclick="fetchStockData()">
-                    Fetch Data
-                </button>
-            </div>
-            <div id="errorMessage" class="error-message"></div>
-            <div id="loadingSpinner" class="loading-spinner">
-                Loading data...
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-container">
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="symbolInput" 
+                        placeholder="Enter stock symbol (e.g., AAPL, GOOGL, MSFT)" 
+                        autocomplete="off"
+                    />
+                    <button id="fetchBtn" onclick="fetchStockData()">
+                        <span class="btn-text">Get Data</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+                </div>
+                <div id="errorMessage" class="error-message"></div>
             </div>
         </div>
 
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Fetching stock data...</p>
+        </div>
+
+        <!-- Results Section -->
         <div id="resultSection" class="result-section">
             <div class="result-header">
-                <h2 id="stockSymbol"></h2>
-                <div id="dataCount"></div>
+                <div class="stock-info">
+                    <h2 id="stockSymbol" class="stock-symbol"></h2>
+                    <span id="dataCount" class="data-count"></span>
+                </div>
+                <div class="result-actions">
+                    <button onclick="exportToCSV()" class="btn-secondary">
+                        📥 Export CSV
+                    </button>
+                </div>
             </div>
-            
+
+            <!-- Table Container with horizontal scroll -->
             <div class="table-container">
-                <table id="dataTable">
+                <table class="data-table">
                     <thead>
                         <tr>
-                            <th onclick="sortData('date')" class="sortable">Date</th>
-                            <th onclick="sortData('open')" class="sortable">Open</th>
-                            <th onclick="sortData('high')" class="sortable">High</th>
-                            <th onclick="sortData('low')" class="sortable">Low</th>
-                            <th onclick="sortData('close')" class="sortable">Close</th>
-                            <th>Daily Change</th>
-                            <th onclick="sortData('volume')" class="sortable">Volume</th>
+                            <th onclick="sortData('date')" class="sortable">
+                                Date
+                                <span class="sort-icon"></span>
+                            </th>
+                            <th onclick="sortData('open')" class="sortable">
+                                Open
+                                <span class="sort-icon"></span>
+                            </th>
+                            <th onclick="sortData('high')" class="sortable">
+                                High
+                                <span class="sort-icon"></span>
+                            </th>
+                            <th onclick="sortData('low')" class="sortable">
+                                Low
+                                <span class="sort-icon"></span>
+                            </th>
+                            <th onclick="sortData('close')" class="sortable">
+                                Close
+                                <span class="sort-icon"></span>
+                            </th>
+                            <th onclick="sortData('change')" class="sortable">
+                                Change
+                                <span class="sort-icon"></span>
+                            </th>
+                            <th onclick="sortData('changePercent')" class="sortable">
+                                Change %
+                                <span class="sort-icon"></span>
+                            </th>
+                            <th onclick="sortData('volume')" class="sortable">
+                                Volume
+                                <span class="sort-icon"></span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -55,9 +102,16 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Table Footer with Stats -->
+            <div class="table-footer">
+                <div class="stats">
+                    <span id="rowCount">Showing 0 rows</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="script.js"></script>
 </body>
 </html>
