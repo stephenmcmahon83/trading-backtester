@@ -21,6 +21,10 @@ def index():
 
 @app.route('/api/stock-data', methods=['POST'])
 def get_stock_data():
+    """
+    Fetch stock data from DATABASE ONLY
+    NO Yahoo Finance calls here!
+    """
     try:
         data = request.get_json()
         symbol = data.get('symbol', '').upper()
@@ -28,13 +32,13 @@ def get_stock_data():
         if not symbol:
             return jsonify({'error': 'Symbol is required'}), 400
         
-        app.logger.info(f'Fetching data for {symbol}')
+        app.logger.info(f'Fetching {symbol} from DATABASE')
         
         # Connect to database
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
-        # Query ALL data for the symbol
+        # Query data from database ONLY
         cursor.execute("""
             SELECT date, open, high, low, close, volume
             FROM stock_data
@@ -47,9 +51,9 @@ def get_stock_data():
         conn.close()
         
         if not rows:
-            available_symbols = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'AMZN', 'META', 'NVDA', 'SPY', 'QQQ', 'TQQQ']
+            app.logger.warning(f'No data found for {symbol}')
             return jsonify({
-                'error': f'No data found for {symbol}. Try: {", ".join(available_symbols)}'
+                'error': f'No data found for {symbol}. Try: AAPL, MSFT, GOOGL, TSLA, SPY, TQQQ'
             }), 404
         
         # Format data
@@ -64,7 +68,7 @@ def get_stock_data():
                 'volume': int(row['volume'])
             })
         
-        app.logger.info(f'Returning {len(formatted_data)} records for {symbol}')
+        app.logger.info(f'Successfully returned {len(formatted_data)} records for {symbol}')
         
         return jsonify({
             'symbol': symbol,
@@ -77,7 +81,7 @@ def get_stock_data():
 
 @app.route('/api/available-symbols', methods=['GET'])
 def get_available_symbols():
-    """Return list of available symbols"""
+    """Return list of available symbols from database"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -132,6 +136,4 @@ def health():
         }), 500
 
 if __name__ == '__main__':
-    print("Starting Flask server...")
-    print(f"Database: {DATABASE_URL[:30]}...")
     app.run(debug=True, port=5000)
