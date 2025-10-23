@@ -21,10 +21,7 @@ def index():
 
 @app.route('/api/stock-data', methods=['POST'])
 def get_stock_data():
-    """
-    Fetch stock data from DATABASE ONLY
-    NO Yahoo Finance calls here!
-    """
+    """Fetch stock data from DATABASE ONLY - NO Yahoo Finance!"""
     try:
         data = request.get_json()
         symbol = data.get('symbol', '').upper()
@@ -32,13 +29,13 @@ def get_stock_data():
         if not symbol:
             return jsonify({'error': 'Symbol is required'}), 400
         
-        app.logger.info(f'Fetching {symbol} from DATABASE')
+        print(f'[API] Fetching {symbol} from DATABASE')
         
-        # Connect to database
+        # Connect to Supabase database
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
-        # Query data from database ONLY
+        # Query data from database
         cursor.execute("""
             SELECT date, open, high, low, close, volume
             FROM stock_data
@@ -51,9 +48,9 @@ def get_stock_data():
         conn.close()
         
         if not rows:
-            app.logger.warning(f'No data found for {symbol}')
+            print(f'[API] No data found for {symbol}')
             return jsonify({
-                'error': f'No data found for {symbol}. Try: AAPL, MSFT, GOOGL, TSLA, SPY, TQQQ'
+                'error': f'No data found for {symbol}. Available: AAPL, MSFT, GOOGL, TSLA, SPY, TQQQ'
             }), 404
         
         # Format data
@@ -68,7 +65,7 @@ def get_stock_data():
                 'volume': int(row['volume'])
             })
         
-        app.logger.info(f'Successfully returned {len(formatted_data)} records for {symbol}')
+        print(f'[API] Returning {len(formatted_data)} records for {symbol}')
         
         return jsonify({
             'symbol': symbol,
@@ -76,12 +73,12 @@ def get_stock_data():
         })
             
     except Exception as e:
-        app.logger.error(f'Error: {str(e)}')
+        print(f'[API] Error: {str(e)}')
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 @app.route('/api/available-symbols', methods=['GET'])
 def get_available_symbols():
-    """Return list of available symbols from database"""
+    """Return list of available symbols"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -111,7 +108,7 @@ def get_available_symbols():
         
         return jsonify({'symbols': formatted_symbols})
     except Exception as e:
-        app.logger.error(f'Error fetching symbols: {str(e)}')
+        print(f'[API] Error fetching symbols: {str(e)}')
         return jsonify({'error': str(e)}), 500
 
 @app.route('/health')
