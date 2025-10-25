@@ -342,6 +342,21 @@ body {
     font-weight: 600;
 }
 
+/* === NEW HIGHLIGHT STYLES === */
+.highlight-red {
+    background-color: #fee2e2; /* Light red background */
+    color: #b91c1c;             /* Darker red text */
+    font-weight: 600;
+    text-align: center; /* Center the value for better visibility */
+}
+
+.highlight-green {
+    background-color: #dcfce7; /* Light green background */
+    color: #166534;             /* Darker green text */
+    font-weight: 600;
+    text-align: center; /* Center the value for better visibility */
+}
+
 /* Table Footer */
 .table-footer {
     padding: 1rem 1.5rem;

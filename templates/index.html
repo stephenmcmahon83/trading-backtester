@@ -61,42 +61,26 @@
             <!-- Table Container -->
             <div class="table-container">
                 <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th onclick="sortData('date')" class="sortable">
-                                Date
-                                <span class="sort-icon"></span>
-                            </th>
-                            <th onclick="sortData('open')" class="sortable">
-                                Open
-                                <span class="sort-icon"></span>
-                            </th>
-                            <th onclick="sortData('high')" class="sortable">
-                                High
-                                <span class="sort-icon"></span>
-                            </th>
-                            <th onclick="sortData('low')" class="sortable">
-                                Low
-                                <span class="sort-icon"></span>
-                            </th>
-                            <th onclick="sortData('close')" class="sortable">
-                                Close
-                                <span class="sort-icon"></span>
-                            </th>
-                            <th onclick="sortData('change')" class="sortable">
-                                Change
-                                <span class="sort-icon"></span>
-                            </th>
-                            <th onclick="sortData('changePercent')" class="sortable">
-                                Change %
-                                <span class="sort-icon"></span>
-                            </th>
-                            <th onclick="sortData('volume')" class="sortable">
-                                Volume
-                                <span class="sort-icon"></span>
-                            </th>
-                        </tr>
-                    </thead>
+                    <!-- ... inside your <thead> tag ... -->
+                <thead>
+                    <tr>
+                        <th onclick="sortData('date')" class="sortable">Date <span class="sort-icon"></span></th>
+                        <th onclick="sortData('open')" class="sortable">Open <span class="sort-icon"></span></th>
+                        <th onclick="sortData('high')" class="sortable">High <span class="sort-icon"></span></th>
+                        <th onclick="sortData('low')" class="sortable">Low <span class="sort-icon"></span></th>
+                        <th onclick="sortData('close')" class="sortable">Close <span class="sort-icon"></span></th>
+                        <th onclick="sortData('change')" class="sortable">Change <span class="sort-icon"></span></th>
+                        <th onclick="sortData('changePercent')" class="sortable">Change % <span class="sort-icon"></span></th>
+                        <th onclick="sortData('volume')" class="sortable">Volume <span class="sort-icon"></span></th>
+        
+                        <!-- === MODIFIED COLUMNS === -->
+                        <th onclick="sortData('rsi_2')" class="sortable">RSI(2) <span class="sort-icon"></span></th>
+                        <th onclick="sortData('rsi_2_avg_5')" class="sortable">5-Day Avg RSI(2) <span class="sort-icon"></span></th>
+                        <th onclick="sortData('rsi_2_avg_10')" class="sortable">10-Day Avg RSI(2) <span class="sort-icon"></span></th>
+                        <!-- === END OF MODIFIED COLUMNS === -->
+                    </tr>
+                </thead>
+                <!-- ... -->
                     <tbody id="tableBody">
                         <!-- Data will be inserted here -->
                     </tbody>
