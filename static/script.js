@@ -36,7 +36,7 @@ async function fetchStockData() {
             throw new Error(data.error || 'Failed to fetch data');
         }
 
-        currentData = data.data; // The API response now merges everything into 'data'
+        currentData = data.data;
         currentSymbol = data.symbol;
         sortColumn = 'date';
         sortDirection = 'desc';
@@ -54,13 +54,11 @@ async function fetchStockData() {
 // Process data for display (add calculated fields)
 function processDataForDisplay() {
     processedData = currentData.map(day => {
-        const change = day.close - day.open;
-        const changePercent = (day.open !== 0) ? (change / day.open) * 100 : 0;
+        // REMOVED: Calculation for 'change' is no longer needed.
+        const changePercent = (day.open !== 0) ? ((day.close - day.open) / day.open) * 100 : 0;
         return {
             ...day,
-            change,
             changePercent,
-            changeFormatted: `${change >= 0 ? '+' : ''}$${change.toFixed(2)}`,
             changePercentFormatted: `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`
         };
     });
@@ -122,13 +120,9 @@ function renderTable() {
 
     processedData.forEach(day => {
         const row = document.createElement('tr');
-        const changeClass = day.change >= 0 ? 'positive' : 'negative';
-
-        // Get highlight classes directly from each day's data object
+        const changeClass = day.changePercent >= 0 ? 'positive' : 'negative';
         const class5Day = day.highlight_5_day === 'red' ? 'highlight-red' : day.highlight_5_day === 'green' ? 'highlight-green' : '';
         const class10Day = day.highlight_10_day === 'red' ? 'highlight-red' : day.highlight_10_day === 'green' ? 'highlight-green' : '';
-        
-        // Helper to format whole numbers (integers) sent from the backend
         const formatInt = (num) => num !== null ? num : 'N/A';
 
         row.innerHTML = `
@@ -137,7 +131,7 @@ function renderTable() {
             <td>$${day.high.toFixed(2)}</td>
             <td>$${day.low.toFixed(2)}</td>
             <td><strong>$${day.close.toFixed(2)}</strong></td>
-            <td class="${changeClass}">${day.changeFormatted}</td>
+            <!-- REMOVED: Cell for 'changeFormatted' -->
             <td class="${changeClass}">${day.changePercentFormatted}</td>
             <td>${formatVolume(day.volume)}</td>
             <td>${formatInt(day.rsi_2)}</td>
@@ -152,10 +146,12 @@ function renderTable() {
 // Update sorting arrows in table headers
 function updateSortIndicators() {
     document.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+    
+    // UPDATED: Re-numbered map after removing 'Change' column
     const columnMap = {
         'date': 0, 'open': 1, 'high': 2, 'low': 3, 'close': 4,
-        'change': 5, 'changePercent': 6, 'volume': 7,
-        'rsi_2': 8, 'rsi_2_avg_5': 9, 'rsi_2_avg_10': 10
+        'changePercent': 5, 'volume': 6,
+        'rsi_2': 7, 'rsi_2_avg_5': 8, 'rsi_2_avg_10': 9
     };
     const th = document.querySelectorAll('th')[columnMap[sortColumn]];
     if (th) {
@@ -192,16 +188,20 @@ const formatDate = (dateStr) => {
 // Export data to CSV
 function exportToCSV() {
     if (processedData.length === 0) return showError('No data to export.');
-    const headers = ['Date', 'Open', 'High', 'Low', 'Close', 'Change', 'Change %', 'Volume', 'RSI(2)', '5-Day Avg RSI(2)', '10-Day Avg RSI(2)'];
+    
+    // UPDATED: Headers for CSV export
+    const headers = ['Date', 'Open', 'High', 'Low', 'Close', 'Change %', 'Volume', 'RSI(2)', '5-Day Avg RSI(2)', '10-Day Avg RSI(2)'];
     const csvRows = [headers.join(',')];
+
     processedData.forEach(day => {
         const row = [
             day.date, day.open.toFixed(2), day.high.toFixed(2), day.low.toFixed(2), day.close.toFixed(2),
-            day.change.toFixed(2), day.changePercent.toFixed(2), day.volume,
+            day.changePercent.toFixed(2), day.volume,
             day.rsi_2 ?? '', day.rsi_2_avg_5 ?? '', day.rsi_2_avg_10 ?? ''
         ];
         csvRows.push(row.join(','));
     });
+    
     const csvString = csvRows.join('\n');
     const blob = new Blob([csvString], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -220,7 +220,6 @@ document.getElementById('symbolInput').addEventListener('keypress', (e) => {
     }
 });
 
-// Any initial setup on page load can go here
 document.addEventListener('DOMContentLoaded', () => {
-    // e.g., loadAvailableSymbols();
+    // any initial setup can go here
 });

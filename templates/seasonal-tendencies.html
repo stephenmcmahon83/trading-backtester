@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Seasonal Tendencies - Stock Analysis{% endblock %}
+
+{% block content %}
+<header class="header">
+    <div class="header-content">
+        <h1>Seasonal Tendencies for SPY</h1>
+        <p class="subtitle">
+            Historical forward returns and win rates based on the trading day of the year.
+        </p>
+    </div>
+</header>
+
+<div id="loadingSpinner" class="loading-spinner show">
+    <div class="spinner"></div>
+    <p>Calculating seasonal data...</p>
+</div>
+
+<div id="resultSection" class="result-section">
+    <!-- TABLE 1: Average Return (%) -->
+    <div class="result-header">
+        <div class="stock-info">
+            <h2 class="stock-symbol">Average Return (%)</h2>
+        </div>
+        <div id="stats1" class="data-count"></div>
+    </div>
+    <div class="table-container">
+        <table class="data-table" id="avgReturnTable">
+            <thead>
+                <tr>
+                    <th>Date (2025)</th><th>Day #</th><th>Trades</th>
+                    <th>1-Day</th><th>2-Day</th><th>3-Day</th><th>4-Day</th><th>5-Day</th><th>6-Day</th>
+                    <th>7-Day</th><th>8-Day</th><th>9-Day</th><th>10-Day</th><th>11-Day</th>
+                    <th>12-Day</th><th>13-Day</th><th>14-Day</th><th>15-Day</th>
+                </tr>
+            </thead>
+            <tbody id="avgReturnBody"></tbody>
+        </table>
+    </div>
+
+    <!-- TABLE 2: Percentage of Profitable Trades -->
+    <div class="result-header" style="margin-top: 3rem;">
+        <div class="stock-info">
+            <h2 class="stock-symbol">Percent Profitable (%)</h2>
+        </div>
+         <div id="stats2" class="data-count">Heatmap shows win rate</div>
+    </div>
+    <div class="table-container">
+        <table class="data-table" id="winRateTable">
+             <thead>
+                <tr>
+                    <th>Date (2025)</th><th>Day #</th><th>Trades</th>
+                    <th>1-Day</th><th>2-Day</th><th>3-Day</th><th>4-Day</th><th>5-Day</th><th>6-Day</th>
+                    <th>7-Day</th><th>8-Day</th><th>9-Day</th><th>10-Day</th><th>11-Day</th>
+                    <th>12-Day</th><th>13-Day</th><th>14-Day</th><th>15-Day</th>
+                </tr>
+            </thead>
+            <tbody id="winRateBody"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='seasonal.js') }}"></script>
+{% endblock %}

@@ -4,28 +4,81 @@
     box-sizing: border-box;
 }
 
+/* === Updated theme to match IEA.org aesthetic === */
 :root {
-    --primary-color: #2563eb;
-    --primary-hover: #1d4ed8;
+    --primary-color: #00548a; /* IEA Blue */
+    --primary-hover: #003e65;
     --secondary-color: #64748b;
     --success-color: #10b981;
     --danger-color: #ef4444;
-    --background: #f8fafc;
+    --background: #f7f7f7; /* Light gray background */
     --surface: #ffffff;
     --border-color: #e2e8f0;
-    --text-primary: #0f172a;
-    --text-secondary: #64748b;
+    --text-primary: #333333; /* Dark gray text */
+    --text-secondary: #555555;
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    /* Font changed to Work Sans */
+    font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--background);
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
+}
+
+/* === NEW: Navigation Bar & Page Styles === */
+.navbar {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 2rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+}
+
+.nav-brand {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 1.5rem;
+    transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+    color: var(--primary-color);
+}
+
+.page-header {
+    text-align: center;
+    padding: 3rem 1rem;
+    background-color: var(--surface);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.page-description {
+    max-width: 600px;
+    margin: 1rem auto 0;
+    color: var(--text-secondary);
 }
 
 .container {
@@ -34,7 +87,6 @@ body {
     padding: 2rem;
 }
 
-/* Header */
 .header {
     text-align: center;
     margin-bottom: 3rem;
@@ -42,7 +94,7 @@ body {
 
 .header-content h1 {
     font-size: 2.5rem;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
 }
@@ -53,7 +105,6 @@ body {
     font-weight: 400;
 }
 
-/* Search Section */
 .search-section {
     margin-bottom: 2rem;
 }
@@ -73,17 +124,18 @@ body {
     flex: 1;
     padding: 0.875rem 1.25rem;
     font-size: 1rem;
-    border: 2px solid var(--border-color);
+    border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     background: var(--surface);
     transition: all 0.2s ease;
     font-family: inherit;
+    font-weight: 500;
 }
 
 #symbolInput:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 84, 138, 0.1);
 }
 
 #fetchBtn {
@@ -133,7 +185,6 @@ body {
     color: var(--primary-color);
 }
 
-/* Error Message */
 .error-message {
     background: #fef2f2;
     color: var(--danger-color);
@@ -148,7 +199,6 @@ body {
     display: block;
 }
 
-/* Loading Spinner */
 .loading-spinner {
     display: none;
     flex-direction: column;
@@ -171,22 +221,9 @@ body {
     animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Result Section */
 .result-section {
     display: none;
     animation: fadeIn 0.4s ease;
@@ -196,16 +233,7 @@ body {
     display: block;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
 .result-header {
     display: flex;
@@ -239,7 +267,6 @@ body {
     font-weight: 500;
 }
 
-/* Table Container */
 .table-container {
     background: var(--surface);
     border-radius: 0.75rem;
@@ -259,7 +286,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 10;
-    background: var(--background);
+    background: #f0f0f0;
 }
 
 .data-table th {
@@ -297,39 +324,30 @@ body {
     opacity: 0.3;
 }
 
-.data-table th.sortable:hover .sort-icon {
-    opacity: 0.6;
-}
-
-.data-table th.sort-asc .sort-icon::before {
-    content: '▲';
-    opacity: 1;
-    color: var(--primary-color);
-}
-
-.data-table th.sort-desc .sort-icon::before {
-    content: '▼';
-    opacity: 1;
-    color: var(--primary-color);
-}
+.data-table th.sortable:hover .sort-icon { opacity: 0.6; }
+.data-table th.sort-asc .sort-icon::before { content: '▲'; opacity: 1; color: var(--primary-color); }
+.data-table th.sort-desc .sort-icon::before { content: '▼'; opacity: 1; color: var(--primary-color); }
 
 .data-table tbody tr {
     border-bottom: 1px solid var(--border-color);
     transition: background-color 0.15s ease;
 }
 
-.data-table tbody tr:hover {
-    background: var(--background);
-}
-
-.data-table tbody tr:last-child {
-    border-bottom: none;
-}
+.data-table tbody tr:hover { background: var(--background); }
+.data-table tbody tr:last-child { border-bottom: none; }
 
 .data-table td {
     padding: 1rem;
     color: var(--text-primary);
     white-space: nowrap;
+    font-weight: 500;
+}
+
+/* Center-align all three RSI columns */
+.data-table td:nth-child(8),
+.data-table td:nth-child(9),
+.data-table td:nth-child(10) {
+    text-align: center;
 }
 
 .positive {
@@ -342,22 +360,18 @@ body {
     font-weight: 600;
 }
 
-/* === NEW HIGHLIGHT STYLES === */
 .highlight-red {
-    background-color: #fee2e2; /* Light red background */
-    color: #b91c1c;             /* Darker red text */
+    background-color: #fee2e2;
+    color: #b91c1c;
     font-weight: 600;
-    text-align: center; /* Center the value for better visibility */
 }
 
 .highlight-green {
-    background-color: #dcfce7; /* Light green background */
-    color: #166534;             /* Darker green text */
+    background-color: #dcfce7;
+    color: #166534;
     font-weight: 600;
-    text-align: center; /* Center the value for better visibility */
 }
 
-/* Table Footer */
 .table-footer {
     padding: 1rem 1.5rem;
     background: var(--surface);
@@ -372,55 +386,49 @@ body {
     font-weight: 500;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
-    .container {
-        padding: 1rem;
-    }
-
-    .header-content h1 {
-        font-size: 2rem;
-    }
-
-    .input-group {
-        flex-direction: column;
-    }
-
-    .result-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    .table-container {
-        max-height: calc(100vh - 500px);
-    }
-
-    .data-table {
-        font-size: 0.8rem;
-    }
-
-    .data-table th,
-    .data-table td {
-        padding: 0.75rem 0.5rem;
-    }
+    .container { padding: 1rem; }
+    .header-content h1 { font-size: 2rem; }
+    .input-group { flex-direction: column; }
+    .result-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .table-container { max-height: calc(100vh - 500px); }
+    .data-table { font-size: 0.8rem; }
+    .data-table th, .data-table td { padding: 0.75rem 0.5rem; }
 }
 
-/* Scrollbar Styling */
-.table-container::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
+.table-container::-webkit-scrollbar { width: 8px; height: 8px; }
+.table-container::-webkit-scrollbar-track { background: var(--background); }
+.table-container::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+.table-container::-webkit-scrollbar-thumb:hover { background: var(--secondary-color); }
 
-.table-container::-webkit-scrollbar-track {
-    background: var(--background);
+/* === NEW: Heatmap Styles for Seasonal Table === */
+/* === NEW: Heatmap Styles for Seasonal Table === */
+.heat-cell {
+    font-weight: 600;
 }
+.heat-0-40 { background-color: #fbe9e7; color: #c62828; } /* Light Red */
+.heat-40-45 { background-color: #fff3e0; color: #e65100; } /* Light Orange */
+.heat-45-50 { background-color: #fffde7; color: #f57f17; } /* Light Yellow */
+.heat-50-55 { background-color: #f1f8e9; color: #558b2f; } /* Light Green */
+.heat-55-60 { background-color: #e8f5e9; color: #2e7d32; }
+.heat-60-65 { background-color: #dcfce7; color: #166534; } 
+.heat-65-70 { background-color: #c8e6c9; color: #1b5e20; }
+.heat-70-100 { background-color: #a5d6a7; color: #1b5e20; } /* Dark Green */
 
-.table-container::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
+/* === NEW: Style for highlighting the current trading day row === */
+.highlight-today td {
+    background-color: #e3f2fd !important; /* A light blue to stand out */
+    font-weight: 700;
+    color: var(--primary-color); /* Uses your existing theme's primary blue */
 }
-
-.table-container::-webkit-scrollbar-thumb:hover {
-    background: var(--secondary-color);
+/* === NEW: Heatmap for Average Return Table (Top Table) === */
+.heat-return {
+    color: #fff !important; /* White text for better contrast */
+    font-weight: 600;
 }
+.heat-ret-neg-high { background-color: #b71c1c; } /* Strongest Negative */
+.heat-ret-neg-med  { background-color: #e57373; } /* Medium Negative */
+.heat-ret-neg-low  { background-color: #ffcdd2; color: #555 !important; } /* Weakest Negative */
+.heat-ret-pos-low  { background-color: #c8e6c9; color: #555 !important; } /* Weakest Positive */
+.heat-ret-pos-med  { background-color: #66bb6a; } /* Medium Positive */
+.heat-ret-pos-high { background-color: #2e7d32; } /* Strongest Positive */
